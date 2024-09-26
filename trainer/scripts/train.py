@@ -94,12 +94,8 @@ def main(cfg: TrainerConfig) -> None:
 
     def evaluate():
         model.eval()
-        # end_of_train_dataloader = accelerator.gradient_state.end_of_dataloader
         logger.info(f"*** Evaluating {cfg.dataset.valid_split_name} ***")
-        # metrics = task.evaluate(model, criterion, split2dataloader[cfg.dataset.valid_split_name])
-        # accelerator.update_metrics(metrics)
-        # accelerator.gradient_state.end_of_dataloader = end_of_train_dataloader
-        # Temporarily disable gradient tracking
+        # deal with accelerator.gradient_state.end_of_dataloader = end_of_train_dataloader
         with torch.no_grad():
             metrics = task.evaluate(model, criterion, split2dataloader[cfg.dataset.valid_split_name])
 
