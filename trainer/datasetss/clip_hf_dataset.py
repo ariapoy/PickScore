@@ -27,14 +27,14 @@ class ProcessorConfig:
 @dataclass
 class CLIPHFDatasetConfig(BaseDatasetConfig):
     _target_: str = "trainer.datasetss.clip_hf_dataset.CLIPHFDataset"
-    dataset_name: str = "yuvalkirstain/pickapic_v1"
-    dataset_config_name: str = "null"
+    dataset_name: str = "yuvalkirstain/pickapic_v2"
+    dataset_config_name: str = "default"
 
     from_disk: bool = False
     train_split_name: str = "train"
     valid_split_name: str = "validation_unique"
     test_split_name: str = "test_unique"
-    cache_dir: Optional[str] = None
+    cache_dir: Optional[str] = '/work/u7335737/pickapics/'
 
     caption_column_name: str = "caption"
     input_ids_column_name: str = "input_ids"
@@ -53,6 +53,7 @@ class CLIPHFDatasetConfig(BaseDatasetConfig):
     keep_only_different: bool = False
     keep_only_with_label: bool = False
     keep_only_with_label_in_non_train: bool = True
+    keep_only_no_tie: bool = True
 
     processor: ProcessorConfig = ProcessorConfig()
 
@@ -82,6 +83,9 @@ class CLIPHFDataset(BaseDataset):
             logger.info(f"Keeping only examples with label in {self.split} split")
             self.dataset = self.dataset.filter(lambda x: x[self.cfg.has_label_column_name])
             logger.info(f"Kept {len(self.dataset)} examples from {self.split} dataset")
+
+        if self.cfg.keep_only_no_tie:
+            self.dataset = self.dataset.filter(lambda x: x['label_0'] != x['label_1'])
 
         if self.cfg.limit_examples_per_prompt > 0:
             logger.info(f"Limiting examples per prompt to {self.cfg.limit_examples_per_prompt}")
@@ -137,6 +141,9 @@ class CLIPHFDataset(BaseDataset):
         if self.cfg.from_disk:
             dataset = load_from_disk(self.cfg.dataset_name)[split]
         else:
+            print('='*64)
+            print(self.cfg)
+            print('='*64)
             dataset = load_dataset(
                 self.cfg.dataset_name,
                 self.cfg.dataset_config_name,
@@ -217,3 +224,4 @@ class CLIPHFDataset(BaseDataset):
 
     def __len__(self):
         return len(self.dataset)
+

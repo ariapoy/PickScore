@@ -102,4 +102,4 @@ class TrainerConfig:
     optimizer: Any = MISSING
     lr_scheduler: Any = MISSING
     debug: DebugConfig = DebugConfig()
-    output_dir: str = "outputs"
+    output_dir: str = "test"
