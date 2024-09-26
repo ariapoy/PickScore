@@ -94,11 +94,16 @@ def main(cfg: TrainerConfig) -> None:
 
     def evaluate():
         model.eval()
-        end_of_train_dataloader = accelerator.gradient_state.end_of_dataloader
+        # end_of_train_dataloader = accelerator.gradient_state.end_of_dataloader
         logger.info(f"*** Evaluating {cfg.dataset.valid_split_name} ***")
-        metrics = task.evaluate(model, criterion, split2dataloader[cfg.dataset.valid_split_name])
+        # metrics = task.evaluate(model, criterion, split2dataloader[cfg.dataset.valid_split_name])
+        # accelerator.update_metrics(metrics)
+        # accelerator.gradient_state.end_of_dataloader = end_of_train_dataloader
+        # Temporarily disable gradient tracking
+        with torch.no_grad():
+            metrics = task.evaluate(model, criterion, split2dataloader[cfg.dataset.valid_split_name])
+
         accelerator.update_metrics(metrics)
-        accelerator.gradient_state.end_of_dataloader = end_of_train_dataloader
 
     logger.info(f"task: {task.__class__.__name__}")
     logger.info(f"model: {model.__class__.__name__}")
@@ -128,6 +133,7 @@ def main(cfg: TrainerConfig) -> None:
             with accelerator.accumulate(model):
                 loss = task.train_step(model, criterion, batch)
                 avg_loss = accelerator.gather(loss).mean().item()
+                train_loss += avg_loss / accelerator.cfg.gradient_accumulation_steps
 
                 accelerator.backward(loss)
                 if accelerator.sync_gradients:
@@ -137,16 +143,15 @@ def main(cfg: TrainerConfig) -> None:
                 lr_scheduler.step()
                 optimizer.zero_grad()
 
-            train_loss += avg_loss / accelerator.cfg.gradient_accumulation_steps
 
             if accelerator.sync_gradients:
                 accelerator.update_global_step(train_loss)
                 train_loss = 0.0
 
-            if accelerator.global_step > 0:
-                lr = lr_scheduler.get_last_lr()[0]
+            # if accelerator.global_step > 0:
+            #     lr = lr_scheduler.get_last_lr()[0]
 
-            accelerator.update_step(avg_loss, lr)
+            # accelerator.update_step(avg_loss, lr)
 
             if accelerator.should_end():
                 evaluate()
