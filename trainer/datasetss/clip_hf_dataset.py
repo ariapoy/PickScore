@@ -53,7 +53,7 @@ class CLIPHFDatasetConfig(BaseDatasetConfig):
     keep_only_different: bool = False
     keep_only_with_label: bool = False
     keep_only_with_label_in_non_train: bool = True
-    keep_only_no_tie: bool = True
+    keep_only_no_tie: bool = False
 
     processor: ProcessorConfig = ProcessorConfig()
 
