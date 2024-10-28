@@ -56,7 +56,7 @@ class BaseAcceleratorConfig:
     debug: DebugConfig = DebugConfig()
     seed: int = 42
     resume_from_checkpoint: bool = True
-    max_steps: int = 6000
+    max_steps: int = 20000
     num_epochs: int = 10
     validate_steps: int = 100
     eval_on_start: bool = True

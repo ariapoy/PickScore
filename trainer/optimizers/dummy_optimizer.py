@@ -5,7 +5,7 @@ from accelerate.utils import DummyOptim
 @dataclass
 class DummyOptimizerConfig:
     _target_: str = "trainer.optimizers.dummy_optimizer.BaseDummyOptim"
-    lr: float = 3e-6
+    lr: float = 1e-3 # 3e-6
     weight_decay: float = 0.3
 
 
