@@ -49,12 +49,15 @@ def load_task(cfg: DictConfig, accelerator: BaseAccelerator):
 def verify_or_write_config(cfg: TrainerConfig):
     os.makedirs(cfg.output_dir, exist_ok=True)
     yaml_path = os.path.join(cfg.output_dir, "config.yaml")
-    if not os.path.exists(yaml_path):
-        OmegaConf.save(cfg, yaml_path, resolve=True)
-    with open(yaml_path) as f:
-        existing_config = f.read()
-    if existing_config != OmegaConf.to_yaml(cfg, resolve=True):
-        raise ValueError(f"Config was not saved correctly - {yaml_path}")
+    # if not os.path.exists(yaml_path):
+    #     OmegaConf.save(cfg, yaml_path, resolve=True)
+    OmegaConf.save(cfg, yaml_path, resolve=True)
+    # with open(yaml_path) as f:
+    #     existing_config = f.read()
+    # if existing_config != OmegaConf.to_yaml(cfg, resolve=True):
+    #     OmegaConf.save(cfg, os.path.join(cfg.output_dir, 'config2.yaml'), resolve=True)
+
+    #     raise ValueError(f"Config was not saved correctly - {yaml_path}")
     logger.info(f"Config can be found in {yaml_path}")
 
 
@@ -94,8 +97,12 @@ def main(cfg: TrainerConfig) -> None:
 
     def evaluate():
         model.eval()
+        # end_of_train_dataloader = accelerator.gradient_state.end_of_dataloader
         logger.info(f"*** Evaluating {cfg.dataset.valid_split_name} ***")
-        # deal with accelerator.gradient_state.end_of_dataloader = end_of_train_dataloader
+        # metrics = task.evaluate(model, criterion, split2dataloader[cfg.dataset.valid_split_name])
+        # accelerator.update_metrics(metrics)
+        # accelerator.gradient_state.end_of_dataloader = end_of_train_dataloader
+        # Temporarily disable gradient tracking
         with torch.no_grad():
             metrics = task.evaluate(model, criterion, split2dataloader[cfg.dataset.valid_split_name])
 

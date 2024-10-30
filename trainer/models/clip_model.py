@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from transformers import CLIPModel as HFCLIPModel
-from transformers import CLIPConfig as HFCLIPConfig
 
 from torch import nn
 
@@ -16,12 +15,17 @@ class ClipModelConfig(BaseModelConfig):
 class CLIPModel(nn.Module):
     def __init__(self, cfg: ClipModelConfig):
         super().__init__()
-        # self.model = HFCLIPModel.from_pretrained(cfg.pretrained_model_name_or_path)
-
-        # Initializing a CLIPModel (with random weights) from the openai/clip-vit-base-patch32 style configuration
-        # https://huggingface.co/docs/transformers/en/model_doc/clip
-        configuration = HFCLIPConfig()
+        model_openai = HFCLIPModel.from_pretrained(cfg.pretrained_model_name_or_path)
+        openclip_path = "laion/CLIP-ViT-B-32-laion2B-s34B-b79K"
+        model_openclip = HFCLIPModel.from_pretrained(openclip_path)
+        configuration = model_openai.config
         self.model = HFCLIPModel(configuration)
+        # text from Open AI
+        self.model.text_model.load_state_dict(model_openai.text_model.state_dict())
+        self.model.text_projection.load_state_dict(model_openai.text_projection.state_dict())
+        # vision from OpenCLIP
+        self.model.vision_model.load_state_dict(model_openclip.vision_model.state_dict())
+        self.model.visual_projection.load_state_dict(model_openclip.visual_projection.state_dict())
 
     def get_text_features(self, *args, **kwargs):
         return self.model.get_text_features(*args, **kwargs)
