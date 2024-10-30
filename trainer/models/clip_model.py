@@ -15,17 +15,18 @@ class ClipModelConfig(BaseModelConfig):
 class CLIPModel(nn.Module):
     def __init__(self, cfg: ClipModelConfig):
         super().__init__()
-        model_openai = HFCLIPModel.from_pretrained(cfg.pretrained_model_name_or_path)
-        openclip_path = "laion/CLIP-ViT-B-32-laion2B-s34B-b79K"
-        model_openclip = HFCLIPModel.from_pretrained(openclip_path)
-        configuration = model_openai.config
+        model_openclip = HFCLIPModel.from_pretrained(cfg.pretrained_model_name_or_path)
+        # openclip_path = "openai/clip-vit-large-patch14-336"
+        metaclip_path = 'facebook/metaclip-h14-fullcc2.5b'
+        model_metaclip = HFCLIPModel.from_pretrained(metaclip_path)
+        configuration = model_metaclip.config
         self.model = HFCLIPModel(configuration)
-        # text from Open AI
-        self.model.text_model.load_state_dict(model_openai.text_model.state_dict())
-        self.model.text_projection.load_state_dict(model_openai.text_projection.state_dict())
-        # vision from OpenCLIP
-        self.model.vision_model.load_state_dict(model_openclip.vision_model.state_dict())
-        self.model.visual_projection.load_state_dict(model_openclip.visual_projection.state_dict())
+        # text from OpenCLIP
+        self.model.text_model.load_state_dict(model_openclip.text_model.state_dict())
+        self.model.text_projection.load_state_dict(model_openclip.text_projection.state_dict())
+        # vision from MetaCLIP
+        self.model.vision_model.load_state_dict(model_metaclip.vision_model.state_dict())
+        self.model.visual_projection.load_state_dict(model_metaclip.visual_projection.state_dict())
 
     def get_text_features(self, *args, **kwargs):
         return self.model.get_text_features(*args, **kwargs)
