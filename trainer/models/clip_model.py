@@ -23,10 +23,10 @@ class CLIPModel(nn.Module):
         self.model = HFCLIPModel(configuration)
         # text from OpenCLIP
         self.model.text_model.load_state_dict(model_openclip.text_model.state_dict())
-        # self.model.text_projection.load_state_dict(model_openclip.text_projection.state_dict())
+        self.model.text_projection.load_state_dict(model_openclip.text_projection.state_dict())
         # vision from MetaCLIP
         self.model.vision_model.load_state_dict(model_metaclip.vision_model.state_dict())
-        # self.model.visual_projection.load_state_dict(model_metaclip.visual_projection.state_dict())
+        self.model.visual_projection.load_state_dict(model_metaclip.visual_projection.state_dict())
 
     def get_text_features(self, *args, **kwargs):
         return self.model.get_text_features(*args, **kwargs)
